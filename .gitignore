@@ -1,4 +1,4 @@
 # ignore csv and json files
-*.csv
+#*.csv
 *.json
 *.log

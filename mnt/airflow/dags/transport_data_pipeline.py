@@ -73,7 +73,7 @@ with DAG("transport_data_pipeline", start_date=datetime(2023, 11, 11),
     is_transport_data_available = HttpSensor (
         task_id="is_transport_data_available",
         http_conn_id="transport_api",
-        endpoint="marclamberti/f45f872dea4dfd3eaa015a4a1af4b39b",
+        endpoint="gateway",
         response_check=lambda response: "data" in response.text,
         poke_interval=5,
         timeout=20
@@ -163,14 +163,9 @@ with DAG("transport_data_pipeline", start_date=datetime(2023, 11, 11),
         html_content="<h3>belgium_traffic_pipeline</h3>"
     )
 
-    send_slack_notification = SlackWebhookOperator(
-        task_id="send_slack_notification",
-        http_conn_id="slack_conn",
-        message=_get_message(),
-        channel="#monitoring"
-    )
+    
 
 
     is_transport_data_available >> is_transport_data_file_available >> downloading_transport_data >> saving_weekday 
     saving_weekday >> saving_weekend >> creating_weekday_table >> creating_weekend_table >> send_email_notification
-    send_email_notification >> send_slack_notification
+    send_email_notification 
