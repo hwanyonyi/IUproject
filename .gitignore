@@ -1,0 +1,4 @@
+# ignore csv and json files
+*.csv
+*.json
+*.log
