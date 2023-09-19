@@ -304,4 +304,21 @@ Now you should see two table named weekday_traffic and weekend_traffic
   ```
 - You should receive a success notification, and you'll be able to receive an email when your DAG completes.
 
+**TESTING THE PIPELINE**
+Before running the pipeline make sure that you have deleted:
+  - The weekday_data.json and weekend_data.json files that are located at (mnt/airflow/dags/files/)
+  - DROP the tables generated using Hue query interface using the following command
+  ```
+  DROP TABLE weekday_traffic
+  DROP TABLE weekend_traffic
+  ```
+  - Empty your mailbox of the notification you recieved earlier in readiness to receive a new notification
+
+Proceed to the user interface of airflow through the link http://localhost:8080 and turn on the transport_data_pipeline DAG
+  - explore different views of the DAG and watch it execute.
+
+Once you are done watching the pipeline run, you can stop the containers with the followng command
+```
+./stop.sh
+```
 
