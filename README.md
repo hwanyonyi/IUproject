@@ -59,7 +59,11 @@ After cloning the repository to your local computer into a folder that is simila
 Preliminary:
 - Ensure Docker Desktop is installed and running on your local computer.
 - Navigate to the project's root folder.
-- Execute the command './start.sh' to initiate the setup process.
+- Execute the command 
+```
+./start.sh
+```
+To initiate the setup process.
 - Note that the first-time setup may take around 30 minutes, and it's recommended to allocate at least 4 CPU cores.
 - This command creates all the necessary microservices for the project.
 - After setup, check container statuses using 'docker ps'; all should be healthy except the gateway container.
@@ -77,10 +81,25 @@ c.	Host: http://localhost:8000/
 2.	Click on save. This is all you need to get the connection working
 Testing the connection:
 1.	In your terminal, navigate to the project folder: run the command docker ps 
-2.	Obtain the airflow container id then log into the container interactively: 
-docker exec -it 0b7f07451d53 /bin/bash
+
+```
+docker ps
+```
+2.	Obtain the airflow container id then log into the container interactively:
+
+
+
+Replace the container_id in the command below with the one gotten from the docker ps command above
+```
+docker exec -it (container_id) /bin/bash
+```
+
 3.	Test the first task of our pipeline. This will confirm that the API is available. Run the following command from inside the airflow container:
-airflow@0b7f07451d53:/$ airflow tasks test transport_data_pipeline is_transport_data_available 2023-01-01
+
+```
+airflow tasks test transport_data_pipeline is_transport_data_available 2023-01-01
+```
+
 This should give you a success notification like similar to the one bellow
 
 **Task 2:CHECK IF THE TRANSPORT FILE IS AVAILABLE**
@@ -91,21 +110,40 @@ b.	connection type : File(path)
 c.	Extra: {"path":"/opt/airflow/dags/files"}
 
 3.	Run the following commands in your terminal
-$ docker ps : this will allow you to get the container ID
-$ docker exec –it (container id)  /bin/bash
+
+```
+docker ps
+```
+This will allow you to get the container ID
+
+```
+docker exec –it (container id)  /bin/bash
+```
+
 Run the following command from inside the airflow container:
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline is_transport_data_file_available 2023-01-01
+
+```
+ airflow tasks test transport_data_pipeline is_transport_data_file_available 2023-01-01
+```
 You should get a success message
 
 **Task 3:DOWNLOAD THE TRANSPORT DATA FILE, SPLIT THE DATA INTO WEEKED AND WEEKDAY AND CONVERT THE DATA INTO JSON**
 This task involves the execution of the airflow python operator
 Test this task by running the following command in your terminal: remember to use the correct container ID
-$ docker ps : this will allow you to get the container ID
-$ docker exec –it (container id)  /bin/bash
 
--bash-
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline downloading_transport_data 2023-01-01
+```
+docker ps 
+```
+This will allow you to get the container ID
 
+```
+docker exec –it (container id)  /bin/bash
+```
+
+Run the following command from within the container
+```
+airflow tasks test transport_data_pipeline downloading_transport_data 2023-01-01
+```
 For some reason, this command may throw this error: 
 TypeError: split_csv_by_weekday_weekend() missing 3 required positional arguments: 'input_csv_file', 'output_weekday_json', and 'output_weekend_json'
 
@@ -122,26 +160,43 @@ But the files will be created automatically allowing us to proceed to the next t
 - Verify the absence of any existing tables or data in hue.
 
 Execute the following commands in your terminal: remember to have the correct airflow container ID
-$ docker ps : this will allow you to get the container ID
-$ docker exec –it (container id)  /bin/bash
+ 
+```
+docker ps
+```
+This will allow you to get the container ID
 
--bash-
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline saving_weekday 2023-01-01
+```
+docker exec –it (container id)  /bin/bash
+```
+
+
+```
+airflow tasks test transport_data_pipeline saving_weekday 2023-01-01
+```
+
 
 You should get a success message similar to this:
 INFO - Marking task as SUCCESS. dag_id=transport_data_pipeline, task_id=saving_weekday, execution_date=20230101T000000, start_date=20230915T204624, end_date=20230915T204651
 
 Apply the same process to save the weekend table to HDFS.
 Run the following command from within the airflow container:
--bash-
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline saving_weekend 2023-01-01
+
+```
+docker ps
+```
+This will allow you to get the container ID
+
+```
+airflow tasks test transport_data_pipeline saving_weekend 2023-01-01
+```
+
 
 Success message:
 INFO - Marking task as SUCCESS. dag_id=transport_data_pipeline, task_id=saving_weekend, execution_date=20230101T000000, start_date=20230915T205006, end_date=20230915T205018 
 
 Go back to your browser and access the Hue web interface. This time round you should be able navigate and find two folders created under the file browser: weekday and weekend
 
-Certainly, here's the content in point/bullet format:
 
 **Task 5: Creating a Hive Table to Overlay Your Files**
 
@@ -158,20 +213,28 @@ Certainly, here's the content in point/bullet format:
 - Refresh the page to verify that no tables exist yet.
 
 Go back to your terminal and run the following commands to test the creation of the Hive tables that will overlay the data
-$ docker ps : this will allow you to get the container ID
-$ docker exec –it (container id)  /bin/bash
+```
+docker ps
+```
+This will allow you to get the container ID
 
--bash-
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline creating_weekday_table 2023-01-01
+```
+docker exec –it (container id)  /bin/bash
+```
+Then run the followig command
+
+```
+airflow tasks test transport_data_pipeline creating_weekday_table 2023-01-01
+```
 
 Success message: 
 INFO - Marking task as SUCCESS. dag_id=transport_data_pipeline, task_id=creating_weekday_table, execution_date=20230101T000000, start_date=20230915T212609, end_date=20230915T212636
 
 Repeat the above procedure for the weekend table:
 
--bash-
-airflow@f39186273514:/$ airflow tasks test transport_data_pipeline creating_weekend_table 2023-01-01
-
+```
+airflow tasks test transport_data_pipeline creating_weekend_table 2023-01-01
+```
 Success message:
 INFO - Marking task as SUCCESS. dag_id=transport_data_pipeline, task_id=creating_weekend_table, execution_date=20230101T000000, start_date=20230915T213052, end_date=20230915T213108
 
@@ -179,7 +242,7 @@ Go back to Hue web interface and verify that the tables have been created by ref
 
 Now you should see two table named weekday_traffic and weekend_traffic 
 
-Certainly, here's the content in point format suitable for a README.md file:
+
 
 **Task 6: Submitting Data to Our Spark Warehouse**
 
@@ -194,7 +257,7 @@ Certainly, here's the content in point format suitable for a README.md file:
 - Click "Save" and proceed to test the task in your code editor following the procedure used in previous tasks.
 - From within the Airflow container, enter and run the following command in your code editor:
   ```
-  airflow@f39186273514:/$ airflow tasks test transport_data_pipeline weekday_processing 2023-01-01
+  airflow tasks test transport_data_pipeline weekday_processing 2023-01-01
   ```
   You should receive a success notification.
 - Repeat the same Spark Submit job test for the weekend data by running the following Airflow command:
@@ -205,7 +268,7 @@ Certainly, here's the content in point format suitable for a README.md file:
 - Access the Hue web user interface and run the same HQL query as before. You should see some data.
 
 
-Certainly, here's the content in point format for a README.md file:
+
 
 **Task 7: Send Email Notification Task**
 
@@ -225,10 +288,20 @@ Certainly, here's the content in point format for a README.md file:
   docker-compose restart airflow
   ```
 - Now you can add the "Send Email" task to your DAG and configure the task accordingly. In our example, we send the email to a Yahoo account, but the email address can be for any messaging provider.
-- Test your task by executing the following commands:
+- Test your task by executing the following commands one after the other.
+
+    ```
+    docker ps
+    ```
   ```
-  docker ps # to get the container ID
-  docker exec –it (container id) /bin/bash
-  airflow@f39186273514:/$ airflow tasks test transport_data_pipeline send_email_notification 2023-01-01
+   # to get the container ID
+
+   ```
+   docker exec –it (container id) /bin/bash
+   ```
+  ```
+  airflow tasks test transport_data_pipeline send_email_notification 2023-01-01
   ```
 - You should receive a success notification, and you'll be able to receive an email when your DAG completes.
+
+
