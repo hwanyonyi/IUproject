@@ -293,12 +293,12 @@ Now you should see two table named weekday_traffic and weekend_traffic
     ```
     docker ps
     ```
-  ```
-   # to get the container ID
-
-   ```
-   docker exec –it (container id) /bin/bash
-   ```
+    to get the container ID
+    ```
+    docker exec –it (container id) /bin/bash
+    ```
+  
+   
   ```
   airflow tasks test transport_data_pipeline send_email_notification 2023-01-01
   ```
