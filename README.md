@@ -43,7 +43,8 @@ This project has the following features
     - spark-master
     - spark-worker
     - livy
-The project incorporates a comprehensive set of features to effectively manage and analyze data related to Belgian lorry traffic. Airflow, the pipeline orchestration service, automates workflows and ensures timely data processing. Django serves as the API gateway for secure data access, while PostgreSQL provides a robust database backend for Airflow. The Hadoop ecosystem, including HDFS, Hive, and Hue, forms the data lake, facilitating the storage and retrieval of large datasets. Spark services, such as Spark Master, Spark Worker, and Livy, enable distributed data processing, ensuring scalability and efficient analysis. These components collectively create a robust infrastructure for processing and analyzing lorry traffic data, enhancing data-driven decision-making and insights.
+
+The project incorporates a comprehensive set of features to effectively manage and analyze data related to Belgian lorry traffic. Airflow, the pipeline orchestration service, automates workflows and ensures timely data processing. Django serves as the API gateway for secure data access, while PostgreSQL provides a robust database backend for Airflow. The Hadoop ecosystem, including HDFS, Hive, and Hue, forms the data lake, facilitating the storage and retrieval of large datasets. Spark services, such as Spark Master, Spark Worker, and Livy, enable distributed data processing, ensuring scalability and efficient analysis. These components collectively create a robust infrastructure for processing and analyzing lorry traffic data, enhancing data-driven decision-making and insights. This pipeline will be triggered to run on a quarterly basis
 
 ## Getting Started
 clone the repository using the link https://github.com/hwanyonyi/IUproject.git 
@@ -68,19 +69,23 @@ To initiate the setup process.
 - This command creates all the necessary microservices for the project.
 - After setup, check container statuses using 'docker ps'; all should be healthy except the gateway container.
 - Airflow serves as the orchestration and monitoring tool for the pipeline.
+- Allow approximately 10 minutes after the containers start for the airflow container to properly initialize before you try to access it in the next step
 - Access Airflow via 'http://localhost:8080.'
 - Log in with the credentials: username 'airflow' and password 'airflow.'
 
 
 **Task 1:CHECK IF THE API IS AVAILABLE**
-On the airflow main menu: go to Admin and click on Connections to add a new connection
-1.	Click on the plus sign:
-a.	Conn Id: transport_api
-b.	Conn Type: HTTP
-c.	Host: http://localhost:8000/
-2.	Click on save. This is all you need to get the connection working
-Testing the connection:
-1.	In your terminal, navigate to the project folder: run the command docker ps 
+On the airflow main menu: go to Admin and click on Connections to add a new connection:
+
+- Click on the plus sign:
+- 	Conn Id: transport_api
+- 	Conn Type: HTTP
+- 	Host: https://gist.github.com/
+
+Click on save. This is all you need to get the connection working
+
+**Testing the connection**:
+In your terminal, navigate to the project folder: run the command docker ps 
 
 ```
 docker ps
@@ -105,10 +110,10 @@ This should give you a success notification like similar to the one bellow
 **Task 2:CHECK IF THE TRANSPORT FILE IS AVAILABLE**
 1.	Go back to airflow interface web user interface: click on Admin then select connections
 2.	Click the plus sign to add a new connection and configure only the following options
-a.	conn id: transport_path 
-b.	connection type : File(path)
-c.	Extra: {"path":"/opt/airflow/dags/files"}
-
+  - conn id: transport_path 
+  - connection type : File(path)
+  - Extra: {"path":"/opt/airflow/dags/files"}
+  - Save your configuration
 3.	Run the following commands in your terminal
 
 ```
@@ -262,7 +267,7 @@ Now you should see two table named weekday_traffic and weekend_traffic
   You should receive a success notification.
 - Repeat the same Spark Submit job test for the weekend data by running the following Airflow command:
   ```
-  airflow@f39186273514:/$ airflow tasks test transport_data_pipeline weekend_processing 2023-01-01
+  airflow tasks test transport_data_pipeline weekend_processing 2023-01-01
   ```
   You should get a success notification after the test has completed running.
 - Access the Hue web user interface and run the same HQL query as before. You should see some data.
@@ -282,6 +287,7 @@ Now you should see two table named weekday_traffic and weekend_traffic
   5. This generates a password; copy and save it securely, then click "Done."
 - In the project repository, navigate to the folder `mnt > airflow > airflow.cfg`.
 - `airflow.cfg` is the configuration file for Airflow. Edit the SMTP settings to include your email address and the generated password.
+  
 - Save your changes to the configuration file.
 - In your terminal, restart your Airflow container with the following command:
   ```
