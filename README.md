@@ -39,12 +39,13 @@ This project has the following features
     - hive-server
     - hive-webhcat
     - hue 
-- Spark Services
+- Spark Services - The warehouse
     - spark-master
     - spark-worker
     - livy
+The code for the services is found the the docker compose file located in the root directory of this project
 
-The project incorporates a comprehensive set of features to effectively manage and analyze data related to Belgian lorry traffic. Airflow, the pipeline orchestration service, automates workflows and ensures timely data processing. Django serves as the API gateway for secure data access, while PostgreSQL provides a robust database backend for Airflow. The Hadoop ecosystem, including HDFS, Hive, and Hue, forms the data lake, facilitating the storage and retrieval of large datasets. Spark services, such as Spark Master, Spark Worker, and Livy, enable distributed data processing, ensuring scalability and efficient analysis. These components collectively create a robust infrastructure for processing and analyzing lorry traffic data, enhancing data-driven decision-making and insights. This pipeline will be triggered to run on a quarterly basis
+The project incorporates a comprehensive set of features to effectively manage and analyze data related to Belgian lorry traffic. Airflow, the pipeline orchestration service, automates workflows and ensures timely data processing. The project has simulated an API gateway the securely injest the data while PostgreSQL provides a robust database backend for Airflow. The Hadoop ecosystem, including HDFS, Hive, and Hue, forms the data lake, facilitating the storage and retrieval of large datasets. Spark services, such as Spark Master, Spark Worker, and Livy, enable distributed data processing, ensuring scalability and efficient analysis. These components collectively create a robust infrastructure for processing and analyzing lorry traffic data, enhancing data-driven decision-making and insights. This pipeline will be triggered to run on a quarterly basis
 
 ## Getting Started
 clone the repository using the link https://github.com/hwanyonyi/IUproject.git 
@@ -59,19 +60,20 @@ After cloning the repository to your local computer into a folder that is simila
 
 Preliminary:
 - Ensure Docker Desktop is installed and running on your local computer.
+- In the project folder under the folder location /mnt/airflow/dags/files, un archive the file transport_details.rar to reveal our working file. Delete any other file that may exist in this location
 - Navigate to the project's root folder.
-- Execute the command 
+- Execute the bash command below 
 ```
 ./start.sh
 ```
-To initiate the setup process.
+The above command will initiate and start up all the neccessary microservices.
 - Note that the first-time setup may take around 30 minutes, and it's recommended to allocate at least 4 CPU cores.
-- This command creates all the necessary microservices for the project.
-- After setup, check container statuses using 'docker ps'; all should be healthy except the gateway container.
+- After setup, check container statuses using 'docker ps'; all should be healthy. 
 - Airflow serves as the orchestration and monitoring tool for the pipeline.
 - Allow approximately 10 minutes after the containers start for the airflow container to properly initialize before you try to access it in the next step
 - Access Airflow via 'http://localhost:8080.'
 - Log in with the credentials: username 'airflow' and password 'airflow.'
+- The project file containing the code that we shall be testing and later run the pipeline is found at: /mnt/airflow/dags/transport_data_pipeline.py
 
 
 **Task 1:CHECK IF THE API IS AVAILABLE**
@@ -108,7 +110,7 @@ airflow tasks test transport_data_pipeline is_transport_data_available 2023-01-0
 This should give you a success notification like similar to the one bellow
 
 **Task 2:CHECK IF THE TRANSPORT FILE IS AVAILABLE**
-1.	Go back to airflow interface web user interface: click on Admin then select connections
+1.	Go back to airflow user interface: 'http://localhost:8080.' and log on as before click on Admin then select connections
 2.	Click the plus sign to add a new connection and configure only the following options
   - conn id: transport_path 
   - connection type : File(path)
@@ -132,7 +134,7 @@ Run the following command from inside the airflow container:
 ```
 You should get a success message
 
-**Task 3:DOWNLOAD THE TRANSPORT DATA FILE, SPLIT THE DATA INTO WEEKED AND WEEKDAY AND CONVERT THE DATA INTO JSON**
+**Task 3:DOWNLOAD THE TRANSPORT DATA FILE, SPLIT THE DATA INTO WEEKEND AND WEEKDAY AND CONVERT THE DATA INTO JSON**
 This task involves the execution of the airflow python operator
 Test this task by running the following command in your terminal: remember to use the correct container ID
 
@@ -149,12 +151,6 @@ Run the following command from within the container
 ```
 airflow tasks test transport_data_pipeline downloading_transport_data 2023-01-01
 ```
-For some reason, this command may throw this error: 
-TypeError: split_csv_by_weekday_weekend() missing 3 required positional arguments: 'input_csv_file', 'output_weekday_json', and 'output_weekend_json'
-
-But the files will be created automatically allowing us to proceed to the next task test
-
-
 
 **Task 4: SAVING THE TRANSPORT FILES INTO HADOOP DISTRIBUTED FILE SYSTEM (HDFS)**
 
@@ -169,7 +165,7 @@ Execute the following commands in your terminal: remember to have the correct ai
 ```
 docker ps
 ```
-This will allow you to get the container ID
+This will allow you to get the airflow container ID
 
 ```
 docker exec –it (container id)  /bin/bash
@@ -221,7 +217,7 @@ Go back to your terminal and run the following commands to test the creation of 
 ```
 docker ps
 ```
-This will allow you to get the container ID
+This will allow you to get the airflow container ID
 
 ```
 docker exec –it (container id)  /bin/bash
@@ -313,14 +309,15 @@ Now you should see two table named weekday_traffic and weekend_traffic
 **TESTING THE PIPELINE**
 Before running the pipeline make sure that you have deleted:
   - The weekday_data.json and weekend_data.json files that are located at (mnt/airflow/dags/files/)
-  - DROP the tables generated using Hue query interface using the following command
+  - DROP the tables generated in hive using Hue query interface using the following command
   ```
   DROP TABLE weekday_traffic
   DROP TABLE weekend_traffic
   ```
-  - Empty your mailbox of the notification you recieved earlier in readiness to receive a new notification
+  - Using hue, you can also delete the folders weekday and weekend that were created during the test
+  - Empty your mailbox of the e-mail notification you recieved earlier in readiness to receive a new notification
 
-Proceed to the user interface of airflow through the link http://localhost:8080 and turn on the transport_data_pipeline DAG
+Proceed to the user interface of airflow through the link http://localhost:8080 and log on as before. Turn on the transport_data_pipeline DAG by toggling the button next to the DAG
   - explore different views of the DAG and watch it execute.
 
 Once you are done watching the pipeline run, you can stop the containers with the followng command
